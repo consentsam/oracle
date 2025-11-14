@@ -1,6 +1,6 @@
 # oracle
 
-Command-line helper that turns GPT-5 Pro into a one-shot oracle while optionally switching to GPT-5.1 with high reasoning effort. The tool sends a single request through the OpenAI Responses API, optionally attaches local files to your prompt, and can enable the platform web_search tool so the model can fetch fresh information before replying.
+Oracle is a command-line helper for GPT-5 Pro / GPT-5.1 when you have one really hard question that needs smart reasoning *and* lots of local context. Pass a prompt plus any relevant files or directories (source code, logs, docs), and Oracle bundles everything into a single Responses API call. GPT-5 works best when you attach the files that explain the issue—just keep the total under the ~196k-token window. Enabling the platform `web_search` tool lets GPT-5 cite up-to-date information before replying.
 
 ## Prerequisites
 
@@ -17,10 +17,11 @@ cp .env.example .env
 
 ```bash
 bun install
+# Ask a question with attached files so GPT-5 sees the full context
 bun ./bin/oracle.js --prompt "Summarize the risk register" --file docs/risk-register.md
 ```
 
-Use `bun run start` if you prefer invoking the script through the package.json shortcut.
+Use `bun run start` if you prefer invoking the script through the package.json shortcut. Always attach the files (or directories) that describe the bug or decision you want GPT-5 to reason about—just verify the combined token count with `--files-report` before sending the request.
 
 ## Features
 
