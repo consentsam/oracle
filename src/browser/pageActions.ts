@@ -667,7 +667,7 @@ function buildResponseObserverExpression(timeoutMs: number): string {
     const captureViaObserver = () =>
       new Promise((resolve, reject) => {
         const deadline = Date.now() + ${timeoutMs};
-        let stopInterval: ReturnType<typeof setInterval> | null = null;
+        let stopInterval = null;
         const observer = new MutationObserver(() => {
           const extracted = extractFromTurns();
           if (extracted) {
