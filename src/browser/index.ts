@@ -33,7 +33,7 @@ export async function runBrowserMode(options: BrowserRunOptions): Promise<Browse
   const attachments: BrowserAttachment[] = options.attachments ?? [];
 
   const config = resolveBrowserConfig(options.config);
-  const logger: BrowserLogger = options.log ?? ((message: string) => {});
+  const logger: BrowserLogger = options.log ?? ((_message: string) => {});
   if (logger.verbose === undefined) {
     logger.verbose = Boolean(config.debug);
   }

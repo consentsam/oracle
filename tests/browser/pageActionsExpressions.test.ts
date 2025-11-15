@@ -1,16 +1,19 @@
 import { describe, expect, test } from 'vitest';
-import { __buildAssistantExtractorForTest, __buildConversationDebugExpressionForTest } from '../../src/browser/pageActions.ts';
+import {
+  buildAssistantExtractorForTest,
+  buildConversationDebugExpressionForTest,
+} from '../../src/browser/pageActions.ts';
 import { CONVERSATION_TURN_SELECTOR, ASSISTANT_ROLE_SELECTOR } from '../../src/browser/constants.ts';
 
 describe('browser automation expressions', () => {
   test('assistant extractor references constants', () => {
-    const expression = __buildAssistantExtractorForTest('capture');
+    const expression = buildAssistantExtractorForTest('capture');
     expect(expression).toContain(JSON.stringify(CONVERSATION_TURN_SELECTOR));
     expect(expression).toContain(JSON.stringify(ASSISTANT_ROLE_SELECTOR));
   });
 
   test('conversation debug expression references conversation selector', () => {
-    const expression = __buildConversationDebugExpressionForTest();
+    const expression = buildConversationDebugExpressionForTest();
     expect(expression).toContain(JSON.stringify(CONVERSATION_TURN_SELECTOR));
   });
 });

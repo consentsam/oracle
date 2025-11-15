@@ -35,6 +35,7 @@ import { attachSession, showStatus } from '../src/cli/sessionDisplay.js';
 import type { ShowStatusOptions } from '../src/cli/sessionDisplay.js';
 import { handleSessionCommand, type StatusOptions, formatSessionCleanupMessage } from '../src/cli/sessionCommand.js';
 import { isErrorLogged } from '../src/cli/errorUtils.js';
+import { handleStatusFlag } from '../src/cli/rootAlias.js';
 
 type EngineMode = 'api' | 'browser';
 
@@ -72,6 +73,7 @@ interface CliOptions extends OptionValues {
   verbose?: boolean;
   debugHelp?: boolean;
   heartbeat?: number;
+  status?: boolean;
 }
 
 type ResolvedCliOptions = Omit<CliOptions, 'model'> & { model: ModelName };
@@ -110,6 +112,7 @@ program
       .preset('summary'),
   )
   .addOption(new Option('--exec-session <id>').hideHelp())
+  .addOption(new Option('--status', 'Show stored sessions (alias for `oracle status`).').default(false).hideHelp())
   .option('--render-markdown', 'Emit the assembled markdown bundle for prompt + files and exit.', false)
   .addOption(
     new Option('--search <mode>', 'Set server-side search behavior (on/off).')
@@ -310,6 +313,10 @@ async function runRootCommand(options: CliOptions): Promise<void> {
   const cliModelArg = normalizeModelOption(options.model) || 'gpt-5-pro';
   const resolvedModel: ModelName = engine === 'browser' ? inferModelFromLabel(cliModelArg) : resolveApiModel(cliModelArg);
   const resolvedOptions: ResolvedCliOptions = { ...options, model: resolvedModel };
+
+  if (await handleStatusFlag(options, { attachSession, showStatus })) {
+    return;
+  }
 
   if (options.session) {
     await attachSession(options.session);

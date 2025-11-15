@@ -997,11 +997,11 @@ export async function captureAssistantMarkdown(
   return null;
 }
 
-export function __buildAssistantExtractorForTest(name: string): string {
+export function buildAssistantExtractorForTest(name: string): string {
   return buildAssistantExtractor(name);
 }
 
-export function __buildConversationDebugExpressionForTest(): string {
+export function buildConversationDebugExpressionForTest(): string {
   return buildConversationDebugExpression();
 }
 

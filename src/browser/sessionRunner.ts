@@ -3,6 +3,7 @@ import type { RunOracleOptions } from '../oracle.js';
 import { formatElapsed } from '../oracle.js';
 import type { BrowserSessionConfig, BrowserRuntimeMetadata } from '../sessionManager.js';
 import { runBrowserMode } from '../browserMode.js';
+import type { BrowserRunResult } from '../browserMode.js';
 import { assembleBrowserPrompt } from './prompt.js';
 import { BrowserAutomationError } from '../oracle/errors.js';
 import type { BrowserLogger } from './types.js';
@@ -65,7 +66,7 @@ export async function runBrowserSessionExecution(
 
   log(headerLine);
   log(chalk.dim('Chrome automation does not stream output; this may take a minute...'));
-  let browserResult;
+  let browserResult: BrowserRunResult;
   try {
     browserResult = await executeBrowser({
       prompt: promptArtifacts.composerText,
