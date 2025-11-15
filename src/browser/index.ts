@@ -227,7 +227,7 @@ function startThinkingStatusMonitor(Runtime: ChromeClient['Runtime'], logger: Br
       const nextMessage = await readThinkingStatus(Runtime);
       if (nextMessage && nextMessage !== lastMessage) {
         lastMessage = nextMessage;
-        logger(`Thinking status: ${nextMessage}`);
+        logger(`Pro thinking: ${nextMessage}`);
       }
     } catch {
       // ignore DOM polling errors
