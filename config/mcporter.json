@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "vercel-domains": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "vercel-domains-mcp"
+      ],
+      "env": {
+        "VERCEL_ACCESS_TOKEN": "${VERCEL_ACCESS_TOKEN}"
+      }
+    },
+    "firecrawl": {
+      "description": "Firecrawl hosted MCP for authenticated scraping and extraction.",
+      "baseUrl": "https://mcp.firecrawl.dev/v2/mcp",
+      "headers": {
+        "Authorization": "Bearer ${FIRECRAWL_API_KEY}"
+      }
+    }
+  },
+  "imports": []
+}
