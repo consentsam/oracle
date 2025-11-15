@@ -520,6 +520,23 @@ function buildResponseObserverExpression(timeoutMs: number): string {
       return Boolean(node.querySelector('[data-message-author-role="assistant"], [data-testid*="assistant"]'));
     };
 
+    const expandCollapsibles = (root) => {
+      const buttons = Array.from(root.querySelectorAll('button'));
+      for (const button of buttons) {
+        const label = (button.textContent || '').toLowerCase();
+        const testid = (button.getAttribute('data-testid') || '').toLowerCase();
+        if (
+          label.includes('more') ||
+          label.includes('expand') ||
+          label.includes('show') ||
+          testid.includes('markdown') ||
+          testid.includes('toggle')
+        ) {
+          button.click();
+        }
+      }
+    };
+
     const extractFromTurns = () => {
       const turns = Array.from(document.querySelectorAll(CONVERSATION_SELECTOR));
       for (let index = turns.length - 1; index >= 0; index -= 1) {
@@ -528,6 +545,7 @@ function buildResponseObserverExpression(timeoutMs: number): string {
           continue;
         }
         const messageRoot = turn.querySelector('[data-message-author-role="assistant"]') ?? turn;
+        expandCollapsibles(messageRoot);
         const preferred =
           messageRoot.querySelector('.markdown') ||
           messageRoot.querySelector('[data-message-content]') ||
@@ -644,19 +662,22 @@ function buildCopyExpression(meta: { messageId?: string | null; turnId?: string 
       const hint = ${JSON.stringify(meta ?? {})};
       if (hint?.messageId) {
         const node = document.querySelector('[data-message-id="' + hint.messageId + '"]');
-        const button = node?.querySelector('${COPY_BUTTON_SELECTOR}') ?? null;
+        const buttons = node ? Array.from(node.querySelectorAll('${COPY_BUTTON_SELECTOR}')) : [];
+        const button = buttons.at(-1) ?? null;
         if (button) {
           return button;
         }
       }
       if (hint?.turnId) {
         const node = document.querySelector('[data-testid="' + hint.turnId + '"]');
-        const button = node?.querySelector('${COPY_BUTTON_SELECTOR}') ?? null;
+        const buttons = node ? Array.from(node.querySelectorAll('${COPY_BUTTON_SELECTOR}')) : [];
+        const button = buttons.at(-1) ?? null;
         if (button) {
           return button;
         }
       }
-      return document.querySelector(BUTTON_SELECTOR);
+      const all = Array.from(document.querySelectorAll(BUTTON_SELECTOR));
+      return all.at(-1) ?? null;
     };
 
     const getPayload = () => {
