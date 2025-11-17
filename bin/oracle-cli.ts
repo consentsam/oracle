@@ -115,8 +115,18 @@ const VERSION = getCliVersion();
 const CLI_ENTRYPOINT = fileURLToPath(import.meta.url);
 const rawCliArgs = process.argv.slice(2);
 const userCliArgs = rawCliArgs[0] === CLI_ENTRYPOINT ? rawCliArgs.slice(1) : rawCliArgs;
-const isTty = process.stdout.isTTY;
-const tuiEnabled = () => isTty && process.env.ORACLE_NO_TUI !== '1';
+const detectTty = () => Boolean(process.stdout.isTTY);
+const isTty = detectTty();
+const tuiEnabled = () => detectTty() && process.env.ORACLE_NO_TUI !== '1';
+
+type LaunchTuiHandler = typeof launchTui;
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __ORACLE_TUI_LAUNCH__: LaunchTuiHandler | undefined;
+}
+
+const resolveLaunchTui = (): LaunchTuiHandler => globalThis.__ORACLE_TUI_LAUNCH__ ?? launchTui;
 
 const program = new Command();
 applyHelpStyling(program, VERSION, isTty);
@@ -127,7 +137,7 @@ program.hook('preAction', (thisCommand) => {
   if (userCliArgs.some((arg) => arg === '--help' || arg === '-h')) {
     return;
   }
-  if (userCliArgs.length === 0 && tuiEnabled()) {
+  if (userCliArgs.length === 0 && (tuiEnabled() || process.env.ORACLE_FORCE_TUI === '1')) {
     // Skip prompt enforcement; runRootCommand will launch the TUI.
     return;
   }
@@ -447,7 +457,7 @@ function getBrowserConfigFromMetadata(metadata: SessionMetadata): BrowserSession
 async function runRootCommand(options: CliOptions): Promise<void> {
   if (process.env.ORACLE_FORCE_TUI === '1') {
     await ensureSessionStorage();
-    await launchTui({ version: VERSION });
+    await resolveLaunchTui()({ version: VERSION });
     return;
   }
   const userConfig = (await loadUserConfig()).config;
@@ -470,7 +480,7 @@ async function runRootCommand(options: CliOptions): Promise<void> {
 
   if (userCliArgs.length === 0) {
     if (tuiEnabled()) {
-      await launchTui({ version: VERSION });
+      await resolveLaunchTui()({ version: VERSION });
       return;
     }
     console.log(chalk.yellow('No prompt or subcommand supplied. See `oracle --help` for usage.'));

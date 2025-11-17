@@ -41,14 +41,7 @@ export async function buildBrowserConfig(options: BrowserFlagOptions): Promise<B
   const normalizedOverride = desiredModelOverride?.toLowerCase() ?? '';
   const baseModel = options.model.toLowerCase();
   const shouldUseOverride = normalizedOverride.length > 0 && normalizedOverride !== baseModel;
-  const cookieNames = parseCookieNames(options.browserCookieNames ?? process.env.ORACLE_BROWSER_COOKIE_NAMES);
-  const inline = await resolveInlineCookies({
-    inlineArg: options.browserInlineCookies,
-    inlineFileArg: options.browserInlineCookiesFile,
-    envPayload: process.env.ORACLE_BROWSER_COOKIES_JSON,
-    envFile: process.env.ORACLE_BROWSER_COOKIES_FILE,
-    cwd: process.cwd(),
-  });
+
   let remoteChrome: { host: string; port: number } | undefined;
   if (options.remoteChrome) {
     const parts = options.remoteChrome.split(':');
@@ -71,6 +64,14 @@ export async function buildBrowserConfig(options: BrowserFlagOptions): Promise<B
     };
   }
 
+  const cookieNames = parseCookieNames(options.browserCookieNames ?? process.env.ORACLE_BROWSER_COOKIE_NAMES);
+  const inline = await resolveInlineCookies({
+    inlineArg: options.browserInlineCookies,
+    inlineFileArg: options.browserInlineCookiesFile,
+    envPayload: process.env.ORACLE_BROWSER_COOKIES_JSON,
+    envFile: process.env.ORACLE_BROWSER_COOKIES_FILE,
+    cwd: process.cwd(),
+  });
   return {
     chromeProfile: options.browserChromeProfile ?? DEFAULT_CHROME_PROFILE,
     chromePath: options.browserChromePath ?? null,
