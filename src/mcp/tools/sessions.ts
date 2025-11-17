@@ -39,8 +39,8 @@ export function registerSessionsTool(server: McpServer): void {
     {
       title: 'List or fetch Oracle sessions',
       description: 'List stored sessions or return full stored data for a given session ID/slug.',
-      inputSchema: sessionsInputSchema.shape as z.ZodRawShape,
-      outputSchema: sessionsOutputSchema.shape as z.ZodRawShape,
+      inputSchema: sessionsInputSchema as unknown as z.ZodType<object>,
+      outputSchema: sessionsOutputSchema as unknown as z.ZodType<object>,
     },
     async (input: unknown) => {
       const { id, hours = 24, limit = 100, includeAll = false, detail = false } = sessionsInputSchema.parse(input);
