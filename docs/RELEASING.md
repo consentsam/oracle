@@ -35,10 +35,10 @@
    - [ ] Promote desired dist-tag (e.g., `npm dist-tag add @steipete/oracle@X.Y.Z latest`).
    - [ ] `git tag vX.Y.Z && git push origin vX.Y.Z` (always tag each release).
    - [ ] `git tag vX.Y.Z && git push --tags`
-   - [ ] Create GitHub release for tag `vX.Y.Z`:
-     - Title `Oracle X.Y.Z`, body = changelog bullets.
-     - Upload assets: `oracle-<version>.tgz`, `oracle-<version>.tgz.sha1`, `oracle-<version>.tgz.sha256`.
-     - Confirm the auto `Source code (zip|tar.gz)` assets are present.
+    - [ ] Create GitHub release for tag `vX.Y.Z`:
+      - Title `Oracle X.Y.Z`, body = full changelog section for that version (copy the entire block from `CHANGELOG.md`, not just highlights).
+      - Upload assets: `oracle-<version>.tgz`, `oracle-<version>.tgz.sha1`, `oracle-<version>.tgz.sha256`.
+      - Confirm the auto `Source code (zip|tar.gz)` assets are present.
    - [ ] From a clean temp directory (no package.json/node_modules), run `npx @steipete/oracle@X.Y.Z "Smoke from empty dir" --dry-run` to confirm the package installs/executes via npx.
    - [ ] After uploading assets, verify they are reachable (e.g., `curl -I <GitHub-asset-URL>` or download and re-check SHA).
    - [ ] Announce / share release notes.
