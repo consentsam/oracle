@@ -58,8 +58,8 @@ oracle session <id>                 # replay a run locally
   {
     "name": "oracle",
     "type": "stdio",
-    "command": "oracle-mcp",
-    "args": []
+    "command": "npx",
+    "args": ["-y", "@steipete/oracle", "oracle-mcp"]
   }
   ```
 - You can call the MCP tools against sessions created by the CLI (shared `~/.oracle/sessions`), and vice versa.
