@@ -779,7 +779,7 @@ async function runRootCommand(options: CliOptions): Promise<void> {
       if (result.success) {
         const via = result.command ? ` via ${result.command}` : '';
         const lineCount = bundle.markdown.split(/\r?\n/).length;
-        const summary = `Copied markdown to clipboard${via} (${formatCompactNumber(bundle.markdown.length)} chars; ${formatCompactNumber(lineCount)} lines; ~${formatCompactNumber(estimatedTokens)} tokens).`;
+        const summary = `Copied markdown to clipboard (${formatCompactNumber(bundle.markdown.length)} chars; ${formatCompactNumber(lineCount)} lines; ~${formatCompactNumber(estimatedTokens)} tokens).`;
         console.log(chalk.dim(summary));
       } else {
         const reason = result.error instanceof Error ? result.error.message : String(result.error ?? 'unknown error');
