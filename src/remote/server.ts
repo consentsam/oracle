@@ -41,7 +41,6 @@ export async function createRemoteServer(
   const color = process.stdout.isTTY
     ? (formatter: (msg: string) => string, msg: string) => formatter(msg)
     : (_formatter: (msg: string) => string, msg: string) => msg;
-  const eye = '🧿';
   // Single-flight guard: remote Chrome can only host one run at a time, so we serialize requests.
   let busy = false;
   let cachedInlineCookies: CookieParam[] | null = null;
@@ -184,7 +183,8 @@ export async function createRemoteServer(
   const reachable = formatReachableAddresses(address.address, address.port);
   const primary = reachable[0] ?? `${address.address}:${address.port}`;
   const extras = reachable.slice(1);
-  logger(color(chalk.cyanBright.bold, `${eye} Remote Oracle listening at ${primary}${extras.length ? ` [${extras.join(', ')}]` : ''}`));
+  const also = extras.length ? `, also [${extras.join(', ')}]` : '';
+  logger(color(chalk.cyanBright.bold, `Listening at ${primary}${also}`));
   logger(color(chalk.yellowBright, `Access token: ${authToken}`));
 
   return {
@@ -203,9 +203,9 @@ export async function serveRemote(options: RemoteServerOptions = {}): Promise<vo
   // Warm-up: check if we already have local ChatGPT cookies; if not, open login prompt and leave it open.
   const cookies = await loadLocalChatgptCookies(console.log, CHATGPT_URL);
   if (cookies?.length) {
-    console.log(`🧿 Detected ${cookies.length} ChatGPT cookies on this host; runs should stay signed in.`);
+    console.log(`Detected ${cookies.length} ChatGPT cookies on this host; runs should stay signed in.`);
   } else {
-    console.log('🧿 No ChatGPT cookies detected; opened chatgpt.com for login. Sign in once, leave the window open, then rerun.');
+    console.log('No ChatGPT cookies detected; opened chatgpt.com for login. Sign in once, leave the window open, then rerun.');
   }
   await new Promise<void>((resolve) => {
     const shutdown = () => {

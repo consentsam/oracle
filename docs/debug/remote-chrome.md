@@ -36,7 +36,7 @@ Actions taken on VM (tmux `vmssh`):
   ```
 - When started correctly, logs show:
   ```
-  Remote Oracle listening at 0.0.0.0:49810
+  Listening at 0.0.0.0:49810
   Access token: cd93955b64d5afcb946a4a4a89651313
   ```
 - One run failed with EADDRINUSE when a stale node listener stayed on 49810; resolved by killing `node ...49810`.

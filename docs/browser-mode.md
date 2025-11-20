@@ -107,7 +107,7 @@ Prefer to keep Chrome entirely on the remote Mac (no DevTools tunneling, no manu
    ```
    Oracle picks a free port, launches Chrome, starts an HTTP/SSE API, and prints:
    ```
-   Remote Oracle listening at 0.0.0.0:9473
+   Listening at 0.0.0.0:9473
    Access token: c4e5f9...
    ```
    Use `--host`, `--port`, or `--token` to override the defaults if needed.
