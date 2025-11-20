@@ -7,6 +7,20 @@ import type {
 import type { ClientLike, ModelName, OracleRequestBody, OracleResponse, ResponseStreamLike } from './types.js';
 
 const DEFAULT_MAX_OUTPUT_TOKENS = 1024;
+const ANTHROPIC_MODEL_ALIASES: Record<ModelName, string> = {
+  'claude-4.5-sonnet': 'claude-sonnet-4-5',
+  'claude-4.1-opus': 'claude-opus-4-1',
+  'gpt-5.1-pro': 'gpt-5.1-pro', // passthrough for typing completeness
+  'gpt-5-pro': 'gpt-5-pro',
+  'gpt-5.1': 'gpt-5.1',
+  'gpt-5.1-codex': 'gpt-5.1-codex',
+  'gemini-3-pro': 'gemini-3-pro',
+};
+
+function resolveAnthropicModelId(modelName: ModelName, resolvedModelId?: string): string {
+  if (resolvedModelId) return resolvedModelId;
+  return ANTHROPIC_MODEL_ALIASES[modelName] ?? modelName;
+}
 
 function buildAnthropicParams(body: OracleRequestBody, model: string): MessageCreateParams {
   const userText = (body.input ?? [])
@@ -63,7 +77,7 @@ export function createAnthropicClient(
   baseUrl?: string,
 ): ClientLike {
   const client = new Anthropic({ apiKey, baseURL: baseUrl });
-  const model = resolvedModelId ?? modelName;
+  const model = resolveAnthropicModelId(modelName, resolvedModelId);
 
   const streamResponses = (body: OracleRequestBody): ResponseStreamLike => {
     const params = buildAnthropicParams(body, model);
