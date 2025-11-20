@@ -43,6 +43,7 @@ import type { ShowStatusOptions } from '../src/cli/sessionDisplay.js';
 import { formatCompactNumber } from '../src/cli/format.js';
 import { formatIntroLine } from '../src/cli/tagline.js';
 import { warnIfOversizeBundle } from '../src/cli/bundleWarnings.js';
+import { resolveRenderFlag } from '../src/cli/renderFlags.js';
 import { resolveGeminiModelId } from '../src/oracle/gemini.js';
 import { handleSessionCommand, type StatusOptions, formatSessionCleanupMessage } from '../src/cli/sessionCommand.js';
 import { isErrorLogged } from '../src/cli/errorUtils.js';
@@ -587,7 +588,7 @@ async function runRootCommand(options: CliOptions): Promise<void> {
     options.file = mergedFileInputs;
   }
   const copyMarkdown = options.copyMarkdown || options.copy;
-  const renderMarkdown = options.renderMarkdown || options.render;
+  const renderMarkdown = resolveRenderFlag(options.render, options.renderMarkdown);
 
   const applyRetentionOption = (): void => {
     if (optionUsesDefault('retainHours') && typeof userConfig.sessionRetentionHours === 'number') {
