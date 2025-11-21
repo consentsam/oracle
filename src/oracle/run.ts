@@ -456,14 +456,6 @@ export async function runOracle(options: RunOracleOptions, deps: RunOracleDeps =
     .join('/');
   const tokensLabel = options.verbose ? 'tokens (input/output/reasoning/total)' : 'tok(i/o/r/t)';
   statsParts.push(`${tokensLabel}=${tokensDisplay}`);
-  const actualInput = usage.input_tokens;
-  if (actualInput !== undefined) {
-    const delta = actualInput - estimatedInputTokens;
-    const deltaText = delta === 0 ? '' : delta > 0 ? ` (+${delta.toLocaleString()})` : ` (${delta.toLocaleString()})`;
-    statsParts.push(
-      `est→actual=${estimatedInputTokens.toLocaleString()}→${actualInput.toLocaleString()}${deltaText}`,
-    );
-  }
   if (!searchEnabled) {
     statsParts.push('search=off');
   }
