@@ -376,6 +376,9 @@ export async function runOracle(options: RunOracleOptions, deps: RunOracleDeps =
               } else if (isTty) {
                 // Buffer for end-of-stream markdown rendering on TTY.
                 streamedChunks.push(event.delta);
+              } else {
+                // Non-TTY streams should still surface output; fall back to raw stdout.
+                stdoutWrite(event.delta);
               }
             }
           }
@@ -467,6 +470,10 @@ export async function runOracle(options: RunOracleOptions, deps: RunOracleDeps =
       sinkWrite(printable);
       if (!printable.endsWith('\n')) {
         sinkWrite('\n');
+      }
+      stdoutWrite(printable);
+      if (!printable.endsWith('\n')) {
+        stdoutWrite('\n');
       }
       log('');
     }
