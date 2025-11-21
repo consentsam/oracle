@@ -1,19 +1,16 @@
-import chalk from 'chalk';
 import { mkdtemp, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
-import {
+import type {
   ClientLike,
   MinimalFsModule,
-  OracleTransportError,
   OracleRequestBody,
   OracleResponse,
   ResponseStreamEvent,
   ResponseStreamLike,
 } from '../../src/oracle.ts';
-
-chalk.level = 0;
+import { OracleTransportError } from '../../src/oracle.ts';
 
 export type TempFile = { dir: string; filePath: string };
 

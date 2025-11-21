@@ -2,7 +2,7 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    setupFiles: ['tests/setup-env.ts'],
+    setupFiles: ['tests/setup-env.ts', 'tests/oracle-cli/setup.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
