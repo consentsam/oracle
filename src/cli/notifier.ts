@@ -1,5 +1,5 @@
 import notifier from 'toasted-notifier';
-import { execFile, spawn } from 'node:child_process';
+import { execFile, spawn, type ExecFileException } from 'node:child_process';
 import { formatUSD, formatNumber } from '../oracle/format.js';
 import { MODEL_CONFIGS } from '../oracle/config.js';
 import type { SessionMode, SessionMetadata } from '../sessionStore.js';
@@ -312,14 +312,26 @@ async function repairMacBadCpu(log: (message: string) => void): Promise<boolean>
 async function runXattrStrip(target: string): Promise<void> {
   if (process.platform !== 'darwin') return;
   await new Promise<void>((resolve, reject) => {
-    const child = execFile('xattr', ['-dr', 'com.apple.quarantine', target], { stdio: 'ignore' }, (error) => {
-      if (error && (error as NodeJS.ErrnoException).code !== 'ENOENT') {
+    const child = execFile(
+      'xattr',
+      ['-dr', 'com.apple.quarantine', target],
+      {},
+      (error: ExecFileException | null) => {
+        const code = error?.code;
+        if (error && code !== 'ENOENT') {
+          reject(error);
+        } else {
+          resolve();
+        }
+      },
+    );
+    child.on('error', (error: NodeJS.ErrnoException) => {
+        if (error && error.code !== 'ENOENT') {
         reject(error);
       } else {
         resolve();
       }
     });
-    child.on('error', reject);
   });
 }
 
