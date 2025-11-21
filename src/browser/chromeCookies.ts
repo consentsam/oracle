@@ -227,7 +227,8 @@ async function materializeCookieFile(sourcePath: string): Promise<string> {
   const tempPath = path.join(tempDir, 'Cookies');
   try {
     await fs.copyFile(resolved, tempPath);
-    return tempDir;
+    // chrome-cookies-secure will append "Cookies" when given a directory; returning the file avoids double-appending.
+    return tempPath;
   } catch (error) {
     // Fall back to the original path if the copy fails; upstream error handling will surface issues.
     return resolved;
