@@ -75,12 +75,15 @@ export async function sendSessionNotification(
     if (await tryMacNativeNotifier(title, message, settings)) {
       return;
     }
-    // Fallback to toasted-notifier (cross-platform). macAppIconOption() is only honored on macOS.
-    await notifier.notify({
-      title,
-      message,
-      sound: settings.sound,
-    });
+    if (!(await shouldSkipToastedNotifier())) {
+      // Fallback to toasted-notifier (cross-platform). macAppIconOption() is only honored on macOS.
+      await notifier.notify({
+        title,
+        message,
+        sound: settings.sound,
+      });
+      return;
+    }
   } catch (error) {
     if (isMacExecError(error)) {
       const repaired = await repairMacNotifier(log);
@@ -102,6 +105,16 @@ export async function sendSessionNotification(
     }
     const reason = describeNotifierError(error);
     log(`(notify skipped: ${reason})`);
+  }
+  // Last-resort macOS fallback: AppleScript alert (simple, noisy, but works when helpers are blocked).
+  if (process.platform === 'darwin') {
+    try {
+      await sendOsascriptAlert(title, message, log);
+      return;
+    } catch (scriptError) {
+      const reason = describeNotifierError(scriptError);
+      log(`(notify skipped: osascript fallback failed: ${reason})`);
+    }
   }
 }
 
@@ -233,6 +246,42 @@ function macNotifierPath(): string | null {
   } catch {
     return null;
   }
+}
+
+async function shouldSkipToastedNotifier(): Promise<boolean> {
+  if (process.platform !== 'darwin') return false;
+  // On Apple Silicon without Rosetta, prefer the native helper and skip x86-only fallback.
+  const arch = process.arch;
+  if (arch !== 'arm64') return false;
+  return !(await hasRosetta());
+}
+
+async function hasRosetta(): Promise<boolean> {
+  return new Promise((resolve) => {
+    const child = spawn('pkgutil', ['--files', 'com.apple.pkg.RosettaUpdateAuto'], { stdio: 'ignore' });
+    child.on('exit', (code) => resolve(code === 0));
+    child.on('error', () => resolve(false));
+  });
+}
+
+async function sendOsascriptAlert(title: string, message: string, log: (msg: string) => void): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const child = spawn('osascript', ['-e', `display notification "${escapeAppleScript(message)}" with title "${escapeAppleScript(title)}"`], {
+      stdio: 'ignore',
+    });
+    child.on('exit', (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`osascript exited with code ${code ?? -1}`));
+      }
+    });
+    child.on('error', reject);
+  });
+}
+
+function escapeAppleScript(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
 function macAppIconOption(): Record<string, string> {
