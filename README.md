@@ -115,7 +115,8 @@ Put defaults in `~/.oracle/config.json` (JSON5). Example:
 {
   model: "gpt-5.1-pro",
   engine: "api",
-  filesReport: true
+  filesReport: true,
+  chatgptUrl: "https://chatgpt.com/g/your-project-folder"
 }
 ```
 See [docs/configuration.md](docs/configuration.md) for precedence and full schema.
