@@ -6,7 +6,7 @@ import chromeCookies from 'chrome-cookies-secure';
 import { COOKIE_URLS } from './constants.js';
 import type { CookieParam } from './types.js';
 import './keytarShim.js';
-import { loadWindowsCookies, materializeCookieFile } from './windowsCookies.js';
+import { loadWindowsCookies } from './windowsCookies.js';
 
 type KeychainLabel = { service: string; account: string };
 type KeytarLike = { getPassword: (service: string, account: string) => Promise<string | null> };
