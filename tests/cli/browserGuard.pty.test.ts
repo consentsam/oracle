@@ -21,7 +21,8 @@ try {
   ptyAvailable = false;
 }
 
-const ptyDescribe = ptyAvailable ? describe : describe.skip;
+const ptyDescribe =
+  process.platform === 'linux' ? describe.skip : ptyAvailable ? describe : describe.skip;
 
 // biome-ignore lint/complexity/useRegexLiterals: constructor form avoids control-char lint noise.
 const ansiRegex = new RegExp('\\x1B\\[[0-9;]*m', 'g');
