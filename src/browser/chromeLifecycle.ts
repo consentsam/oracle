@@ -1,4 +1,6 @@
 import { rm } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
+import os from 'node:os';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import CDP from 'chrome-remote-interface';
@@ -8,15 +10,19 @@ import type { BrowserLogger, ResolvedBrowserConfig, ChromeClient } from './types
 const execFileAsync = promisify(execFile);
 
 export async function launchChrome(config: ResolvedBrowserConfig, userDataDir: string, logger: BrowserLogger) {
-  const chromeFlags = buildChromeFlags(config.headless);
+  const connectHost = resolveRemoteDebugHost();
+  const debugPort = config.debugPort ?? parseDebugPortEnv();
+  const chromeFlags = buildChromeFlags(config.headless, connectHost);
   const launcher = await launch({
     chromePath: config.chromePath ?? undefined,
     chromeFlags,
     userDataDir,
+    port: debugPort ?? undefined,
   });
   const pidLabel = typeof launcher.pid === 'number' ? ` (pid ${launcher.pid})` : '';
-  logger(`Launched Chrome${pidLabel} on port ${launcher.port}`);
-  return launcher;
+  const hostLabel = connectHost ? ` on ${connectHost}` : '';
+  logger(`Launched Chrome${pidLabel} on port ${launcher.port}${hostLabel}`);
+  return Object.assign(launcher, { host: connectHost ?? '127.0.0.1' }) as LaunchedChrome & { host?: string };
 }
 
 export function registerTerminationHooks(
@@ -83,8 +89,8 @@ export async function hideChromeWindow(chrome: LaunchedChrome, logger: BrowserLo
   }
 }
 
-export async function connectToChrome(port: number, logger: BrowserLogger): Promise<ChromeClient> {
-  const client = await CDP({ port });
+export async function connectToChrome(port: number, logger: BrowserLogger, host?: string): Promise<ChromeClient> {
+  const client = await CDP({ port, host });
   logger('Connected to Chrome DevTools protocol');
   return client;
 }
@@ -99,7 +105,7 @@ export async function connectToRemoteChrome(
   return client;
 }
 
-function buildChromeFlags(_headless: boolean): string[] {
+function buildChromeFlags(_headless: boolean, debugHost?: string | null): string[] {
   const flags = [
     '--disable-background-networking',
     '--disable-background-timer-throttling',
@@ -121,7 +127,43 @@ function buildChromeFlags(_headless: boolean): string[] {
     '--use-mock-keychain',
   ];
 
+  if (debugHost && debugHost !== '127.0.0.1') {
+    flags.push('--remote-debugging-address=0.0.0.0');
+  }
+
   // Headless/new is blocked by Cloudflare; always run headful.
 
   return flags;
+}
+
+function parseDebugPortEnv(): number | null {
+  const raw = process.env.ORACLE_BROWSER_PORT ?? process.env.ORACLE_BROWSER_DEBUG_PORT;
+  if (!raw) return null;
+  const value = Number.parseInt(raw, 10);
+  if (!Number.isFinite(value) || value <= 0 || value > 65535) {
+    return null;
+  }
+  return value;
+}
+
+function resolveRemoteDebugHost(): string | null {
+  const override = process.env.ORACLE_BROWSER_REMOTE_DEBUG_HOST?.trim();
+  if (override) return override;
+  if (!isWsl()) return null;
+  try {
+    const resolv = readFileSync('/etc/resolv.conf', 'utf8');
+    for (const line of resolv.split('\n')) {
+      const match = line.match(/^nameserver\s+([0-9.]+)/);
+      if (match?.[1]) return match[1];
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
+function isWsl(): boolean {
+  if (process.platform !== 'linux') return false;
+  if (process.env.WSL_DISTRO_NAME) return true;
+  return os.release().toLowerCase().includes('microsoft');
 }

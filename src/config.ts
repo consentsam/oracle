@@ -18,6 +18,7 @@ export interface BrowserConfigDefaults {
   chatgptUrl?: string | null;
   url?: string;
   timeoutMs?: number;
+  debugPort?: number | null;
   inputTimeoutMs?: number;
   headless?: boolean;
   hideWindow?: boolean;

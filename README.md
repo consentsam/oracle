@@ -97,6 +97,7 @@ npx -y @steipete/oracle oracle-mcp
 | `--models <list>` | Comma-separated API models for multi-model runs. |
 | `--base-url <url>` | Point API runs at LiteLLM/Azure/etc. |
 | `--chatgpt-url <url>` | Target a ChatGPT workspace/folder (browser). |
+| `--browser-port <port>` | Pin the Chrome DevTools port (WSL/Windows firewall helper). |
 | `--browser-inline-cookies[(-file)] <payload|path>` | Supply cookies without Chrome/Keychain (browser). |
 | `--browser-timeout`, `--browser-input-timeout` | Control overall/browser input timeouts (supports h/m/s/ms). |
 | `--render`, `--copy` | Print and/or copy the assembled markdown bundle. |

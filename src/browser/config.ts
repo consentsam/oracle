@@ -11,6 +11,7 @@ export const DEFAULT_BROWSER_CONFIG: ResolvedBrowserConfig = {
   url: CHATGPT_URL,
   chatgptUrl: CHATGPT_URL,
   timeoutMs: 1_200_000,
+  debugPort: null,
   inputTimeoutMs: 30_000,
   cookieSync: true,
   cookieNames: null,
@@ -28,6 +29,9 @@ export const DEFAULT_BROWSER_CONFIG: ResolvedBrowserConfig = {
 };
 
 export function resolveBrowserConfig(config: BrowserAutomationConfig | undefined): ResolvedBrowserConfig {
+  const debugPortEnv = parseDebugPort(
+    process.env.ORACLE_BROWSER_PORT ?? process.env.ORACLE_BROWSER_DEBUG_PORT,
+  );
   const envAllowCookieErrors =
     (process.env.ORACLE_BROWSER_ALLOW_COOKIE_ERRORS ?? '').trim().toLowerCase() === 'true' ||
     (process.env.ORACLE_BROWSER_ALLOW_COOKIE_ERRORS ?? '').trim() === '1';
@@ -46,6 +50,7 @@ export function resolveBrowserConfig(config: BrowserAutomationConfig | undefined
     url: normalizedUrl,
     chatgptUrl: normalizedUrl,
     timeoutMs: config?.timeoutMs ?? DEFAULT_BROWSER_CONFIG.timeoutMs,
+    debugPort: config?.debugPort ?? debugPortEnv ?? DEFAULT_BROWSER_CONFIG.debugPort,
     inputTimeoutMs: config?.inputTimeoutMs ?? DEFAULT_BROWSER_CONFIG.inputTimeoutMs,
     cookieSync: config?.cookieSync ?? cookieSyncDefault,
     cookieNames: config?.cookieNames ?? DEFAULT_BROWSER_CONFIG.cookieNames,
@@ -63,4 +68,13 @@ export function resolveBrowserConfig(config: BrowserAutomationConfig | undefined
     manualLogin,
     manualLoginProfileDir: manualLogin ? resolvedProfileDir : null,
   };
+}
+
+function parseDebugPort(raw?: string | null): number | null {
+  if (!raw) return null;
+  const value = Number.parseInt(raw, 10);
+  if (!Number.isFinite(value) || value <= 0 || value > 65535) {
+    return null;
+  }
+  return value;
 }

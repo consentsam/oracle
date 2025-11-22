@@ -17,6 +17,10 @@ and run the live API suite before shipping major transport changes.
 
 ## Test Cases
 
+### Quick browser port smoke
+
+- `./runner pnpm test:browser` — launches headful Chrome and checks the DevTools endpoint is reachable. Set `ORACLE_BROWSER_PORT` (or `ORACLE_BROWSER_DEBUG_PORT`) to reuse a fixed port when you’ve already opened a firewall rule.
+
 ### Multi-Model CLI fan-out
 
 Run this whenever you touch the session store, CLI session views, or TUI wiring for multi-model runs.

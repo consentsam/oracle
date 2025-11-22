@@ -42,6 +42,7 @@ export interface BrowserAutomationConfig {
   url?: string;
   chatgptUrl?: string | null;
   timeoutMs?: number;
+  debugPort?: number | null;
   inputTimeoutMs?: number;
   cookieSync?: boolean;
   cookieNames?: string[] | null;
@@ -76,6 +77,7 @@ export interface BrowserRunResult {
   answerChars: number;
   chromePid?: number;
   chromePort?: number;
+  chromeHost?: string;
   userDataDir?: string;
 }
 
@@ -86,6 +88,7 @@ export type ResolvedBrowserConfig = Required<
   chromePath?: string | null;
   chromeCookiePath?: string | null;
   desiredModel?: string | null;
+  debugPort?: number | null;
   inlineCookiesSource?: string | null;
   remoteChrome?: { host: string; port: number } | null;
   manualLogin?: boolean;

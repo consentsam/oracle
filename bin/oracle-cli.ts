@@ -117,6 +117,8 @@ interface CliOptions extends OptionValues {
   browserInlineFiles?: boolean;
   browserBundleFiles?: boolean;
   remoteChrome?: string;
+  browserPort?: number;
+  browserDebugPort?: number;
   remoteHost?: string;
   remoteToken?: string;
   copyMarkdown?: boolean;
@@ -337,6 +339,13 @@ program
   .addOption(new Option('--browser-timeout <ms|s|m>', 'Maximum time to wait for an answer (default 1200s / 20m).').hideHelp())
   .addOption(
     new Option('--browser-input-timeout <ms|s|m>', 'Maximum time to wait for the prompt textarea (default 30s).').hideHelp(),
+  )
+  .addOption(
+    new Option('--browser-port <port>', 'Use a fixed Chrome DevTools port (helpful on WSL firewalls).')
+      .argParser(parseIntOption),
+  )
+  .addOption(
+    new Option('--browser-debug-port <port>', '(alias) Use a fixed Chrome DevTools port.').argParser(parseIntOption).hideHelp(),
   )
   .addOption(new Option('--browser-cookie-names <names>', 'Comma-separated cookie allowlist for sync.').hideHelp())
   .addOption(
@@ -1241,6 +1250,9 @@ function applyBrowserDefaultsFromConfig(options: CliOptions, config: UserConfig)
   }
   if (source('browserTimeout') === 'default' && typeof browser.timeoutMs === 'number') {
     options.browserTimeout = String(browser.timeoutMs);
+  }
+  if (source('browserPort') === 'default' && typeof browser.debugPort === 'number') {
+    options.browserPort = browser.debugPort;
   }
   if (source('browserInputTimeout') === 'default' && typeof browser.inputTimeoutMs === 'number') {
     options.browserInputTimeout = String(browser.inputTimeoutMs);

@@ -127,6 +127,7 @@ export async function runBrowserSessionExecution(
     runtime: {
       chromePid: browserResult.chromePid,
       chromePort: browserResult.chromePort,
+      chromeHost: browserResult.chromeHost,
       userDataDir: browserResult.userDataDir,
     },
     answerText,

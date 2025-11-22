@@ -36,6 +36,8 @@ export interface BrowserFlagOptions {
   browserModelLabel?: string;
   browserAllowCookieErrors?: boolean;
   remoteChrome?: string;
+  browserPort?: number;
+  browserDebugPort?: number;
   model: ModelName;
   verbose?: boolean;
 }
@@ -66,6 +68,7 @@ export async function buildBrowserConfig(options: BrowserFlagOptions): Promise<B
     chromePath: options.browserChromePath ?? null,
     chromeCookiePath: options.browserCookiePath ?? null,
     url,
+    debugPort: selectBrowserPort(options),
     timeoutMs: options.browserTimeout ? parseDuration(options.browserTimeout, DEFAULT_BROWSER_TIMEOUT_MS) : undefined,
     inputTimeoutMs: options.browserInputTimeout
       ? parseDuration(options.browserInputTimeout, DEFAULT_BROWSER_INPUT_TIMEOUT_MS)
@@ -84,6 +87,15 @@ export async function buildBrowserConfig(options: BrowserFlagOptions): Promise<B
     allowCookieErrors: options.browserAllowCookieErrors ?? true,
     remoteChrome,
   };
+}
+
+function selectBrowserPort(options: BrowserFlagOptions): number | null {
+  const candidate = options.browserPort ?? options.browserDebugPort;
+  if (candidate === undefined || candidate === null) return null;
+  if (!Number.isFinite(candidate) || candidate <= 0 || candidate > 65_535) {
+    throw new Error(`Invalid browser port: ${candidate}. Expected a number between 1 and 65535.`);
+  }
+  return candidate;
 }
 
 export function mapModelToBrowserLabel(model: ModelName): string {

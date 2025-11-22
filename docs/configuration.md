@@ -23,6 +23,7 @@ Oracle reads an optional per-user config from `~/.oracle/config.json`. The file 
     chromeCookiePath: null,
     chatgptUrl: "https://chatgpt.com/", // root is fine; folder URLs also work
     url: null, // alias for chatgptUrl (kept for back-compat)
+    debugPort: null,          // fixed DevTools port (env: ORACLE_BROWSER_PORT / ORACLE_BROWSER_DEBUG_PORT)
     timeoutMs: 1200000,
     inputTimeoutMs: 30000,
     headless: false,

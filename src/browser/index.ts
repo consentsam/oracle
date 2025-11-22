@@ -96,6 +96,7 @@ export async function runBrowserMode(options: BrowserRunOptions): Promise<Browse
       userDataDir,
       logger,
     ));
+  const chromeHost = (chrome as unknown as { host?: string }).host ?? '127.0.0.1';
   let removeTerminationHooks: (() => void) | null = null;
   try {
     removeTerminationHooks = registerTerminationHooks(chrome, userDataDir, effectiveKeepBrowser, logger);
@@ -114,7 +115,15 @@ export async function runBrowserMode(options: BrowserRunOptions): Promise<Browse
   let appliedCookies = 0;
 
   try {
-    client = await connectToChrome(chrome.port, logger);
+    try {
+      client = await connectToChrome(chrome.port, logger, chromeHost);
+    } catch (error) {
+      const hint = describeDevtoolsFirewallHint(chromeHost, chrome.port);
+      if (hint) {
+        logger(hint);
+      }
+      throw error;
+    }
     const disconnectPromise = new Promise<never>((_, reject) => {
       client?.on('disconnect', () => {
         connectionClosedUnexpectedly = true;
@@ -308,6 +317,7 @@ export async function runBrowserMode(options: BrowserRunOptions): Promise<Browse
       answerChars,
       chromePid: chrome.pid,
       chromePort: chrome.port,
+      chromeHost,
       userDataDir,
     };
   } catch (error) {
@@ -572,6 +582,7 @@ async function runRemoteBrowserMode(
       answerChars,
       chromePid: undefined,
       chromePort: port,
+      chromeHost: host,
       userDataDir: undefined,
     };
   } catch (error) {
@@ -710,6 +721,25 @@ function sanitizeThinkingText(raw: string): string {
     return trimmed.replace(prefixPattern, '').trim();
   }
   return trimmed;
+}
+
+function describeDevtoolsFirewallHint(host: string, port: number): string | null {
+  if (!isWsl()) return null;
+  return [
+    `DevTools port ${host}:${port} is blocked from WSL.`,
+    '',
+    'PowerShell (admin):',
+    `New-NetFirewallRule -DisplayName 'Chrome DevTools ${port}' -Direction Inbound -Action Allow -Protocol TCP -LocalPort ${port}`,
+    "New-NetFirewallRule -DisplayName 'Chrome DevTools (chrome.exe)' -Direction Inbound -Action Allow -Program 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' -Protocol TCP",
+    '',
+    'Re-run the same oracle command after adding the rule.',
+  ].join('\n');
+}
+
+function isWsl(): boolean {
+  if (process.platform !== 'linux') return false;
+  if (process.env.WSL_DISTRO_NAME) return true;
+  return os.release().toLowerCase().includes('microsoft');
 }
 
 function buildThinkingStatusExpression(): string {
