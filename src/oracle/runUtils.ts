@@ -11,14 +11,19 @@ export function resolvePreviewMode(value: boolean | string | undefined): Preview
   return undefined;
 }
 
-export function formatTokenEstimate(value: number, format: (text: string) => string = (text) => text): string {
-  if (value >= 1000) {
-    const abbreviated = Math.floor(value / 100) / 10; // 4,252 -> 4.2
-    const text = `${abbreviated.toFixed(1).replace(/\.0$/, '')}k`;
-    return format(text);
+/**
+ * Format a token count, abbreviating thousands as e.g. 11.38k and trimming trailing zeros.
+ */
+export function formatTokenCount(value: number): string {
+  if (Math.abs(value) >= 1000) {
+    const abbreviated = (value / 1000).toFixed(2).replace(/\.0+$/, '').replace(/\.([1-9]*)0$/, '.$1');
+    return `${abbreviated}k`;
   }
-  const text = value.toLocaleString();
-  return format(text);
+  return value.toLocaleString();
+}
+
+export function formatTokenEstimate(value: number, format: (text: string) => string = (text) => text): string {
+  return format(formatTokenCount(value));
 }
 
 export function formatTokenValue(value: number, usage: OracleResponse['usage'], index: number): string {
@@ -27,6 +32,6 @@ export function formatTokenValue(value: number, usage: OracleResponse['usage'], 
     (index === 1 && usage?.output_tokens == null) ||
     (index === 2 && usage?.reasoning_tokens == null) ||
     (index === 3 && usage?.total_tokens == null);
-  const text = value.toLocaleString();
+  const text = formatTokenCount(value);
   return estimatedFlag ? `${text}*` : text;
 }
