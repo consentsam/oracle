@@ -146,7 +146,10 @@ async function attemptSendButton(Runtime: ChromeClient['Runtime']): Promise<bool
       style.pointerEvents === 'none' ||
       style.display === 'none';
     if (disabled) return 'disabled';
-    (button as HTMLElement).click();
+    // Dispatch proper mouse events for React compatibility
+    for (const type of ['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click']) {
+      button.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, view: window }));
+    }
     return 'clicked';
   })()`;
 
