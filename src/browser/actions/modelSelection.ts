@@ -64,6 +64,11 @@ function buildModelSelectionExpression(targetModel: string): string {
     const INITIAL_WAIT_MS = 150;
     const REOPEN_INTERVAL_MS = 400;
     const MAX_WAIT_MS = 20000;
+    // Minimum score threshold for an "acceptable" match.
+    // Low scores (e.g., only matching "pro" token) should wait for better options.
+    // Exact match = 500, startsWith = 420, includes = 380, testid = 1000.
+    // We require at least a strong partial match (200+) to accept immediately.
+    const MIN_ACCEPTABLE_SCORE = 200;
     const normalizeText = (value) => {
       if (!value) {
         return '';
@@ -195,6 +200,7 @@ function buildModelSelectionExpression(targetModel: string): string {
       pointerClick();
       const openDelay = () => new Promise((r) => setTimeout(r, INITIAL_WAIT_MS));
       let initialized = false;
+      let bestSoFar = null;
       const attempt = async () => {
         if (!initialized) {
           initialized = true;
@@ -203,15 +209,34 @@ function buildModelSelectionExpression(targetModel: string): string {
         ensureMenuOpen();
         const match = findBestOption();
         if (match) {
-          if (optionIsSelected(match.node)) {
-            resolve({ status: 'already-selected', label: match.label });
+          // Track the best match we've seen so far.
+          if (!bestSoFar || match.score > bestSoFar.score) {
+            bestSoFar = match;
+          }
+          // Only accept immediately if the score is high enough (strong match).
+          // Low scores (e.g., just "Pro" matching "pro" token) should wait
+          // for better options like "GPT 5.1 Pro" to appear.
+          if (match.score >= MIN_ACCEPTABLE_SCORE) {
+            if (optionIsSelected(match.node)) {
+              resolve({ status: 'already-selected', label: match.label });
+              return;
+            }
+            match.node.click();
+            resolve({ status: 'switched', label: match.label });
             return;
           }
-          match.node.click();
-          resolve({ status: 'switched', label: match.label });
-          return;
         }
         if (performance.now() - start > MAX_WAIT_MS) {
+          // Timed out - use best match we found, even if low score.
+          if (bestSoFar) {
+            if (optionIsSelected(bestSoFar.node)) {
+              resolve({ status: 'already-selected', label: bestSoFar.label });
+              return;
+            }
+            bestSoFar.node.click();
+            resolve({ status: 'switched-best-effort', label: bestSoFar.label });
+            return;
+          }
           resolve({ status: 'option-not-found' });
           return;
         }
@@ -283,13 +308,18 @@ function buildModelMatchersLiteral(targetModel: string): { labelTokens: string[]
       testIdTokens.add('gpt-5.1-pro');
       testIdTokens.add('gpt-5-1-pro');
       testIdTokens.add('gpt51pro');
+      testIdTokens.add('5-1-pro');
+      testIdTokens.add('51pro');
     }
     if (base.includes('5.0') || base.includes('5-0') || base.includes('50')) {
       testIdTokens.add('gpt-5.0-pro');
       testIdTokens.add('gpt-5-0-pro');
       testIdTokens.add('gpt50pro');
+      testIdTokens.add('5-0-pro');
+      testIdTokens.add('50pro');
     }
-    testIdTokens.add('pro');
+    // NOTE: Don't add just "pro" - it's too broad and matches category labels
+    // like "Pro" which don't represent the specific model version.
     testIdTokens.add('proresearch');
   }
   base
